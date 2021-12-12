@@ -7,6 +7,8 @@
 //
 
 import RealmSwift
+import Foundation
+import UIKit
 
 class TaskListViewController: UITableViewController {
 
@@ -41,7 +43,13 @@ class TaskListViewController: UITableViewController {
         var content = cell.defaultContentConfiguration()
         let taskList = taskLists[indexPath.row]
         content.text = taskList.name
-        content.secondaryText = "\(taskList.tasks.count)"
+        let incompleteTasksCount = taskList.tasks.filter { !$0.isComplete }.count
+        if incompleteTasksCount != 0 {
+            content.secondaryText = "\(incompleteTasksCount)"
+        } else {
+            content.secondaryText = "\u{2713}"
+        }
+        
         cell.contentConfiguration = content
         return cell
     }
@@ -81,8 +89,12 @@ class TaskListViewController: UITableViewController {
         let taskList = taskLists[indexPath.row]
         tasksVC.taskList = taskList
     }
-
+    
     @IBAction func sortingList(_ sender: UISegmentedControl) {
+        if sender.selectedSegmentIndex == 1 {
+            taskLists = taskLists.sorted(byKeyPath: "name", ascending: true)
+            tableView.reloadData()
+        }
     }
     
     @objc private func addButtonPressed() {
