@@ -43,11 +43,16 @@ class TaskListViewController: UITableViewController {
         var content = cell.defaultContentConfiguration()
         let taskList = taskLists[indexPath.row]
         content.text = taskList.name
-        let incompleteTasksCount = taskList.tasks.filter { !$0.isComplete }.count
+        let incompleteTasksCount = taskList.tasks
+            .filter { !$0.isComplete }
+            .count
+        
         if incompleteTasksCount != 0 {
             content.secondaryText = "\(incompleteTasksCount)"
-        } else {
+        } else if taskList.tasks.count > 0 {
             content.secondaryText = "\u{2713}"
+        } else {
+            content.secondaryText = "0"
         }
         
         cell.contentConfiguration = content
