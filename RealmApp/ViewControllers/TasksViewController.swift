@@ -53,13 +53,7 @@ class TasksViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        var task = taskList.tasks[indexPath.row]
-        
-        if indexPath.section == 0 {
-            task = currentTasks[indexPath.row]
-        } else {
-            task = completedTasks[indexPath.row]
-        }
+        let task = indexPath.section == 0 ? currentTasks[indexPath.row] : completedTasks[indexPath.row]
         
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { _, _, _ in
             StorageManager.shared.delete(task)
@@ -75,7 +69,10 @@ class TasksViewController: UITableViewController {
         
         let doneAction = UIContextualAction(style: .normal, title: task.isComplete ? "Undone" : "Done") { _, _, isDone in
             StorageManager.shared.done(task)
-            tableView.reloadSections([0,1], with: .automatic)
+            
+            let newIndexPath = IndexPath(row: 0, section: indexPath.section == 0 ? 1:0)
+            tableView.moveRow(at: indexPath, to: newIndexPath)
+
             isDone(true)
         }
         
