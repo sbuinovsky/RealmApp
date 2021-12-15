@@ -25,6 +25,7 @@ class TaskListViewController: UITableViewController {
         navigationItem.rightBarButtonItem = addButton
         navigationItem.leftBarButtonItem = editButtonItem
         createTempData()
+        
         taskLists = StorageManager.shared.realm.objects(TaskList.self)
     }
     
@@ -40,22 +41,8 @@ class TaskListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
-        var content = cell.defaultContentConfiguration()
         let taskList = taskLists[indexPath.row]
-        content.text = taskList.name
-        let incompleteTasksCount = taskList.tasks
-            .filter { !$0.isComplete }
-            .count
-        
-        if incompleteTasksCount != 0 {
-            content.secondaryText = "\(incompleteTasksCount)"
-        } else if taskList.tasks.count > 0 {
-            content.secondaryText = "\u{2713}"
-        } else {
-            content.secondaryText = "0"
-        }
-        
-        cell.contentConfiguration = content
+        cell.configure(with: taskList)
         return cell
     }
     
@@ -96,20 +83,14 @@ class TaskListViewController: UITableViewController {
     }
     
     @IBAction func sortingList(_ sender: UISegmentedControl) {
-        if sender.selectedSegmentIndex == 1 {
-            taskLists = taskLists.sorted(byKeyPath: "name", ascending: true)
-            tableView.reloadData()
-        }
+        taskLists = sender.selectedSegmentIndex == 0
+            ? taskLists.sorted(byKeyPath: "name")
+            : taskLists.sorted(byKeyPath: "date")
+        tableView.reloadData()
     }
     
     @objc private func addButtonPressed() {
         showAlert()
-    }
-    
-    func createTempData() {
-        DataManager.shared.createTempData {
-            self.tableView.reloadData()
-        }
     }
 }
 
@@ -136,5 +117,11 @@ extension TaskListViewController {
         StorageManager.shared.save(taskList)
         let rowIndex = IndexPath(row: taskLists.index(of: taskList) ?? 0, section: 0)
         tableView.insertRows(at: [rowIndex], with: .automatic)
+    }
+    
+    private func createTempData() {
+        DataManager.shared.createTempData {
+            self.tableView.reloadData()
+        }
     }
 }
